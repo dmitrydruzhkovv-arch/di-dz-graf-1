@@ -883,8 +883,9 @@ function showFinal() {
       <p class="fin-tease">${fmtInline(f.tease)}</p>
       <p class="fin-counter"><b>${firstTryCount}</b> ${f.counter_label} из ${total}</p>
     </div>
-    <button class="lk-btn send-btn" id="send-btn">${f.send_label}</button>
-    <p class="send-note">Сделай скриншот этого экрана и пришли репетитору — он увидит, что освоено, а что подтянуть.</p>
+    ${reported
+      ? `<p class="send-note" style="text-align:center">✅ Результат уже отправлен репетитору — он увидит, что освоено, а что подтянуть.</p>`
+      : ''}
     <div class="lk-sign" style="margin-top:22px">
       <span class="lk-badge lk-badge-l">Λ</span>
       <span class="lk-badge lk-badge-d">D.</span>
@@ -899,7 +900,6 @@ function showFinal() {
     const tg = item.querySelector('.rev-toggle');
     if (tg) tg.textContent = open ? 'скрыть ▴' : 'показать ▾';
   }));
-  document.getElementById('send-btn').addEventListener('click', () => window.open(f.send_url, '_blank'));
 }
 
 // ── ИНИЦИАЛИЗАЦИЯ ─────────────────────────────────────────────────────────────
