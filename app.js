@@ -947,10 +947,14 @@ function showFinal() {
 
 // ── ИНИЦИАЛИЗАЦИЯ ─────────────────────────────────────────────────────────────
 
-function startHw() {
-  document.getElementById('cover').hidden = true;
+// Показать рабочие экраны (обложки нет — вход сразу в задание).
+function showAppScreens() {
   document.getElementById('hw-header').hidden = false;
   document.getElementById('screen').hidden = false;
+}
+
+function startHw() {
+  showAppScreens();
   playSound('snd-win');
   ['snd-lose', 'snd-final'].forEach(id => {
     const a = document.getElementById(id);
@@ -966,9 +970,7 @@ function restoreProgress() {
   firstTryCount = (typeof saved.firstTryCount === 'number') ? saved.firstTryCount : results.filter(r => r && r.correct).length;
   combo = saved.combo || 0; reported = !!saved.reported; finished = !!saved.finished;
   idx = results.length;
-  document.getElementById('cover').hidden = true;
-  document.getElementById('hw-header').hidden = false;
-  document.getElementById('screen').hidden = false;
+  showAppScreens();
   if (finished || idx >= DATA.tasks.length) showFinal(); else render();
   return true;
 }
@@ -982,26 +984,20 @@ function devGoto(n) {
     results[i] = { label: t.label, diff: t.difficulty, correct: true, wrong: [], feedback: t.feedback };
   }
   firstTryCount = target; idx = target;
-  document.getElementById('cover').hidden = true;
-  document.getElementById('hw-header').hidden = false;
-  document.getElementById('screen').hidden = false;
+  showAppScreens();
   render();
 }
 
 function init(data) {
   DATA = data;
-  document.getElementById('cv-kicker').textContent = data.meta.kicker;
-  document.getElementById('cv-title').textContent = data.meta.title;
-  document.getElementById('cv-lead').textContent = data.meta.cover_lead || data.meta.subtitle;
-  document.getElementById('cv-meta').textContent = `${data.tasks.length} шагов · ~${data.meta.minutes || 15} мин`;
-  document.getElementById('cv-start').addEventListener('click', startHw);
 
   const qs = new URLSearchParams(location.search);
   if (qs.get('reset') === '1') clearProgress();
   allowSend = qs.get('send') === '1';
   const g = parseInt(qs.get('g') || qs.get('goto'), 10);
   if (!isNaN(g)) { devGoto(g); return; }
-  restoreProgress();
+  // Нет стартового экрана: продолжаем сохранённый прогресс либо сразу первый вопрос.
+  if (!restoreProgress()) startHw();
 }
 
 fetch('data.json?v=1')
