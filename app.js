@@ -680,7 +680,18 @@ function initMechanic(task, card) {
 let DATA = null;
 let idx = 0, combo = 0, firstTryCount = 0, finished = false, reported = false;
 let devMode = false, allowSend = false;
+let startTs = null, startPerf = null;   // начало для показа (Date) + честная длительность (performance.now)
 const results = [];
+
+function localIso(d) {
+  const p = x => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+function fmtDur(sec) {
+  if (sec == null) return null;
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m ? `${m} мин ${s} с` : `${s} с`;
+}
 
 const HW_ID = 'dz_graf_urok1';
 function progKey() {
@@ -712,6 +723,7 @@ function updateCombo() {
 
 function render() {
   if (idx >= DATA.tasks.length) return showFinal();
+  if (!startTs) { startTs = new Date(); startPerf = performance.now(); }   // засекаем старт на первом задании
   const task = DATA.tasks[idx];
   const screen = document.getElementById('screen');
   document.getElementById('prog-label').textContent = `${idx + 1} из ${DATA.tasks.length}`;
@@ -828,10 +840,13 @@ function reportResults(score, total) {
   const errors = [];
   results.forEach((r, i) => { if (r && !r.correct) errors.push(`№${i + 1} ${r.label}`); });
   const hw = `${DATA.meta.kicker} — ${DATA.meta.title}`;
+  // Время — честно по performance.now (не зависит от часов/пояса); started_at — локальный ISO для показа D.
+  const durationSec = startPerf != null ? Math.round((performance.now() - startPerf) / 1000) : null;
+  const startedAt = startTs ? localIso(startTs) : null;
   try {
     fetch(HW_ENDPOINT, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, hw, hw_id: HW_ID, score, total, errors }), keepalive: true
+      body: JSON.stringify({ token, hw, hw_id: HW_ID, score, total, errors, started_at: startedAt, duration_sec: durationSec }), keepalive: true
     }).catch(() => {});
   } catch (e) {}
 }
@@ -870,12 +885,31 @@ function showFinal() {
   }).join('');
 
   const f = DATA.final;
+  // Единый блок «цифры» — как на всех финалах: верно/всего · точность · время.
+  const pct = total ? Math.round(firstTryCount / total * 100) : 0;
+  const durSec = startPerf != null ? Math.round((performance.now() - startPerf) / 1000) : null;
+  const durTxt = fmtDur(durSec);
+  const statsHtml = `
+    <div class="fin-stats" style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 4px">
+      <div class="fin-stat" style="flex:1;min-width:88px;text-align:center;padding:12px 8px;border-radius:14px;background:rgba(124,108,240,.12);border:1px solid rgba(124,108,240,.28)">
+        <div style="font-size:26px;font-weight:700;line-height:1">${firstTryCount}<span style="font-size:15px;opacity:.6">/${total}</span></div>
+        <div style="font-size:11px;opacity:.7;margin-top:3px">с первого раза</div>
+      </div>
+      <div class="fin-stat" style="flex:1;min-width:88px;text-align:center;padding:12px 8px;border-radius:14px;background:rgba(79,169,255,.12);border:1px solid rgba(79,169,255,.28)">
+        <div style="font-size:26px;font-weight:700;line-height:1">${pct}<span style="font-size:15px;opacity:.6">%</span></div>
+        <div style="font-size:11px;opacity:.7;margin-top:3px">точность</div>
+      </div>
+      ${durTxt ? `<div class="fin-stat" style="flex:1;min-width:88px;text-align:center;padding:12px 8px;border-radius:14px;background:rgba(91,191,138,.12);border:1px solid rgba(91,191,138,.28)">
+        <div style="font-size:20px;font-weight:700;line-height:1.2">${durTxt}</div>
+        <div style="font-size:11px;opacity:.7;margin-top:3px">время</div>
+      </div>` : ''}
+    </div>`;
   const el = document.getElementById('final-screen');
   el.innerHTML = `
     <div class="lk-card" style="padding:22px 18px">
       <div class="fin-theme">${f.theme}</div>
       <div class="fin-tier">${tier}</div>
-      <div class="fin-score"><b>${firstTryCount}</b> <span>из ${total} · ${f.counter_label}</span></div>
+      ${statsHtml}
       ${revHtml}
     </div>
     <div class="lk-card fin-card">
@@ -886,6 +920,7 @@ function showFinal() {
     ${reported
       ? `<p class="send-note" style="text-align:center">✅ Результат уже отправлен репетитору — он увидит, что освоено, а что подтянуть.</p>`
       : ''}
+    <button id="btn-retry" class="lk-btn" style="width:100%;margin-top:16px;padding:14px;border-radius:14px;font-size:15px;font-weight:600;background:rgba(124,108,240,.14);border:1px solid rgba(124,108,240,.35);color:inherit;cursor:pointer">🔁 Пройти заново</button>
     <div class="lk-sign" style="margin-top:22px">
       <span class="lk-badge lk-badge-l">Λ</span>
       <span class="lk-badge lk-badge-d">D.</span>
@@ -893,6 +928,14 @@ function showFinal() {
     <div style="height:32px"></div>`;
   el.classList.add('show');
   window.scrollTo(0, 0);
+
+  const retry = document.getElementById('btn-retry');
+  if (retry) retry.addEventListener('click', () => {
+    clearProgress();
+    const p = new URLSearchParams(location.search);
+    p.set('reset', '1');                 // стартовать заново (loadProgress вернёт пусто)
+    location.href = location.pathname + '?' + p.toString();
+  });
 
   el.querySelectorAll('.rev-item.bad .rev-head').forEach(head => head.addEventListener('click', () => {
     const item = head.closest('.rev-item');
