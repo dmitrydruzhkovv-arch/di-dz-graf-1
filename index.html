@@ -87,8 +87,11 @@
     /* ═══════════ ДВИЖОК ЖИВОГО ГРАФИКА ═══════════ */
     .ge { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
     .ge-formula {
+      /* Фикс-высота под самый высокий вариант (двухэтажная дробь k=3/2),
+         чтобы при кручении целое↔дробь строка не меняла высоту и график под ней не прыгал. */
+      display: flex; align-items: center; justify-content: center;
       text-align: center; font-family: var(--lk-mono); font-size: 21px; font-weight: 700;
-      letter-spacing: .01em; min-height: 30px; color: var(--lk-ink);
+      letter-spacing: .01em; height: 50px; color: var(--lk-ink);
     }
     .ge-round {
       text-align: center; font-family: var(--lk-mono); font-size: 12px; font-weight: 700;
@@ -117,6 +120,7 @@
       color: var(--lk-violet); font-size: 24px; font-weight: 700; cursor: pointer;
       display: grid; place-items: center; font-family: var(--lk-mono); line-height: 1;
       transition: transform .1s, border-color .15s;
+      touch-action: manipulation; /* быстрый повторный тап не зумит страницу (double-tap-zoom) */
     }
     .slbtn:active { transform: scale(.9); }
     .slbtn:hover { border-color: var(--lk-indigo); }
@@ -146,6 +150,7 @@
       color: var(--lk-ink); font-family: var(--lk-font); font-weight: 700; font-size: 15px;
       cursor: pointer; transition: border-color .15s, background .15s; display: flex;
       align-items: center; justify-content: center; gap: 8px;
+      touch-action: manipulation;
     }
     .flip-btn:hover { border-color: var(--lk-indigo); }
     .flip-btn .fb-ico { font-size: 18px; color: var(--lk-violet); }
@@ -372,6 +377,6 @@
 
   </div>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
