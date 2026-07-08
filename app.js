@@ -418,7 +418,7 @@ function buildReadLine(task) {
         </div>
         <div class="rl-grp">
           <span class="rl-grp-lbl"><span class="lk-mono">b</span> =</span>
-          <input class="num-field" type="text" inputmode="numeric" autocomplete="off" id="rl-b-${task.id}-${i}" placeholder="?">
+          <input class="num-field" type="text" inputmode="text" autocomplete="off" id="rl-b-${task.id}-${i}" placeholder="?">
         </div>
       </div>
     </div>`).join('');
@@ -568,7 +568,7 @@ function buildTaxi(task) {
     <div class="tx-q">
       <div class="tx-q-text">${fmtInline(task.question)}</div>
       <div class="tx-q-input">
-        <input class="num-field big-field" type="text" inputmode="numeric" autocomplete="off" id="tx-ans-${task.id}" placeholder="?">
+        <input class="num-field big-field" type="text" inputmode="text" autocomplete="off" id="tx-ans-${task.id}" placeholder="?">
         <span class="unit">${task.unit || ''}</span>
       </div>
     </div>`;
@@ -610,7 +610,7 @@ function initTaxi(task, card) {
 
 function buildNumber(task) {
   return `<div class="num-row" id="num-${task.id}">
-    <input class="num-field big-field" type="text" inputmode="numeric" autocomplete="off" id="num-in-${task.id}" placeholder="?">
+    <input class="num-field big-field" type="text" inputmode="text" autocomplete="off" id="num-in-${task.id}" placeholder="?">
     <span class="unit">${task.unit || ''}</span>
   </div>`;
 }
@@ -630,9 +630,9 @@ function buildCoord(task) {
   return buildGraph({ points: [{ x: task.point.x, y: task.point.y }] }) + `
     <div class="coord-row" id="coord-${task.id}">
       <span class="paren">(</span>
-      <input class="num-field" type="text" inputmode="numeric" autocomplete="off" id="coord-x-${task.id}" placeholder="x">
+      <input class="num-field" type="text" inputmode="text" autocomplete="off" id="coord-x-${task.id}" placeholder="x">
       <span class="semi">;</span>
-      <input class="num-field" type="text" inputmode="numeric" autocomplete="off" id="coord-y-${task.id}" placeholder="y">
+      <input class="num-field" type="text" inputmode="text" autocomplete="off" id="coord-y-${task.id}" placeholder="y">
       <span class="paren">)</span>
     </div>`;
 }
