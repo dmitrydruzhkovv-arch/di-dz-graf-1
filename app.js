@@ -719,6 +719,34 @@ function updateCombo() {
   else el.classList.remove('show');
 }
 
+// ── «ЗАНОВО» (сброс прогресса) ────────────────────────────────────────────────
+
+function doReset() {
+  clearProgress();
+  const p = new URLSearchParams(location.search);
+  p.set('reset', '1');                  // стартовать заново (loadProgress вернёт пусто)
+  location.href = location.pathname + '?' + p.toString();
+}
+
+// Полоска «Заново» — ВНЕ карточки, внизу, через пустоту фона-ромбов. Алая.
+function resetStripHtml() {
+  return `<div class="reset-strip"><button class="reset-btn" type="button" data-reset>Заново</button></div>`;
+}
+function wireReset(root) {
+  const b = root.querySelector('[data-reset]');
+  if (b) b.addEventListener('click', showResetConfirm);
+}
+
+// Полноэкранное подтверждение сброса (Да / Нет).
+function showResetConfirm() {
+  const ov = document.getElementById('reset-overlay');
+  if (ov) ov.classList.add('show');
+}
+function hideResetConfirm() {
+  const ov = document.getElementById('reset-overlay');
+  if (ov) ov.classList.remove('show');
+}
+
 // ── РЕНДЕР КАРТОЧКИ ───────────────────────────────────────────────────────────
 
 function render() {
@@ -750,8 +778,10 @@ function render() {
       <div class="task-feedback" id="fb-${task.id}"><div class="fb-label">Разбор</div>${renderFeedback(task.feedback)}</div>
       ${isSlider ? '' : `<button class="lk-btn check-btn" id="btn-${task.id}">Проверить</button>`}
       <button class="lk-btn next-btn" id="next-${task.id}" hidden>${isLast ? 'К итогам ✨' : 'Дальше →'}</button>
-    </div>`;
+    </div>
+    ${resetStripHtml()}`;
   window.scrollTo(0, 0);
+  wireReset(screen);
 
   const card = document.getElementById(`card-${task.id}`);
   const body = document.getElementById(`body-${task.id}`);
@@ -930,12 +960,7 @@ function showFinal() {
   window.scrollTo(0, 0);
 
   const retry = document.getElementById('btn-retry');
-  if (retry) retry.addEventListener('click', () => {
-    clearProgress();
-    const p = new URLSearchParams(location.search);
-    p.set('reset', '1');                 // стартовать заново (loadProgress вернёт пусто)
-    location.href = location.pathname + '?' + p.toString();
-  });
+  if (retry) retry.addEventListener('click', showResetConfirm);
 
   el.querySelectorAll('.rev-item.bad .rev-head').forEach(head => head.addEventListener('click', () => {
     const item = head.closest('.rev-item');
@@ -990,6 +1015,12 @@ function devGoto(n) {
 
 function init(data) {
   DATA = data;
+
+  // Кнопки полноэкранного подтверждения «Заново» (вешаем один раз).
+  const yes = document.getElementById('reset-yes');
+  const no  = document.getElementById('reset-no');
+  if (yes) yes.addEventListener('click', doReset);
+  if (no)  no.addEventListener('click', hideResetConfirm);
 
   const qs = new URLSearchParams(location.search);
   if (qs.get('reset') === '1') clearProgress();

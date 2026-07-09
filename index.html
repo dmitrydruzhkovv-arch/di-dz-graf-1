@@ -58,6 +58,49 @@
     .check-btn.shake { animation: btn-shake .35s ease; }
     .next-btn { width: 100%; margin-top: 12px; }
 
+    /* ─── «Заново»: вне карточки, внизу через пустоту фона-ромбов, алая ─── */
+    .reset-strip { display: flex; justify-content: center; margin: 56px 0 40px; }
+    .reset-btn {
+      padding: 10px 26px; border-radius: var(--lk-r-lg);
+      background: transparent; color: #F43F5E;
+      border: 1.5px solid rgba(244, 63, 94, .5);
+      font-family: var(--lk-font); font-weight: 700; font-size: 14px;
+      letter-spacing: .02em; cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+      touch-action: manipulation;
+    }
+    .reset-btn:hover, .reset-btn:active {
+      background: rgba(244, 63, 94, .12); border-color: #F43F5E; color: #FB7185;
+    }
+
+    /* ─── Полноэкранное подтверждение сброса ─── */
+    .reset-overlay {
+      position: fixed; inset: 0; z-index: 100; display: none;
+      align-items: center; justify-content: center; padding: 24px;
+      background: rgba(6, 4, 12, .82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    .reset-overlay.show { display: flex; animation: lk-in .2s ease; }
+    .reset-dialog {
+      max-width: 340px; width: 100%; text-align: center;
+      background: var(--lk-surface); border: 1.5px solid rgba(244, 63, 94, .35);
+      border-radius: var(--lk-r-xl); padding: 28px 22px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+    }
+    .reset-dialog h3 { font-size: 19px; font-weight: 800; margin: 0 0 8px; }
+    .reset-dialog p { font-size: 14px; line-height: 1.55; color: var(--lk-muted); margin: 0 0 22px; }
+    .reset-dialog-btns { display: flex; gap: 10px; }
+    .reset-dialog-btns button {
+      flex: 1; padding: 13px; border-radius: var(--lk-r-lg);
+      font-family: var(--lk-font); font-weight: 700; font-size: 15px; cursor: pointer;
+      transition: filter .15s, background .15s; touch-action: manipulation;
+    }
+    .rd-yes { background: #F43F5E; color: #fff; border: none; }
+    .rd-yes:hover { filter: brightness(1.08); }
+    .rd-no {
+      background: transparent; color: var(--lk-ink);
+      border: 1.5px solid var(--lk-line);
+    }
+    .rd-no:hover { background: rgba(255,255,255,.05); }
+
     /* ─── Разбор ─── */
     .task-feedback {
       display: none; margin-top: 14px; padding: 14px 16px; border-radius: var(--lk-r-xl);
@@ -377,6 +420,18 @@
 
   </div>
 
-  <script src="app.js?v=6"></script>
+  <!-- Полноэкранное подтверждение сброса «Заново» -->
+  <div class="reset-overlay" id="reset-overlay">
+    <div class="reset-dialog">
+      <h3>Начать заново?</h3>
+      <p>Весь прогресс сбросится, и ты вернёшься к первому заданию.</p>
+      <div class="reset-dialog-btns">
+        <button class="rd-yes" id="reset-yes" type="button">Да, заново</button>
+        <button class="rd-no"  id="reset-no"  type="button">Нет</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=7"></script>
 </body>
 </html>
