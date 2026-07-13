@@ -959,11 +959,10 @@ function showAppScreens() {
 
 function startHw() {
   showAppScreens();
-  playSound('snd-win');
-  ['snd-lose', 'snd-final'].forEach(id => {
-    const a = document.getElementById(id);
-    if (a) { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); }
-  });
+  // Звук на старте НЕ играем. Раньше здесь звучала победная мелодия, а следом
+  // «будились» проигрыш и финал обычным play() — ученик открывал ссылку и слышал
+  // все три разом (Ди, 13.07). Будим молча (muted) — движок hw-core.js.
+  HwCore.unlockAudio(['snd-win', 'snd-lose', 'snd-final']);
   render();
 }
 
